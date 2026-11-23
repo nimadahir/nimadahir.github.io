@@ -1,3 +1,4 @@
+
 project:
   type: website
 
@@ -6,8 +7,20 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Home
-      - about.qmd
+        text: About Me!
+      - href: about.qmd
+        text: Mini Project 1
+      - href: mayomap.qmd
+        text: Maps
+      - href: rtip.html
+        text: R-Tip-igraph!
+      - href: https://github.com/kjworld313/banking_software
+        text: "Banking Software Design Project"
+        target: _blank
+      - href: https://github.com/nimadahir/MiniProject2
+        text: "Mini Project 2"
+        target: _blank
+        
 
 format:
   html:

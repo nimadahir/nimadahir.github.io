@@ -1,11 +1,36 @@
 ---
-title: "nimadahir.github.io"
+title: "Nima Dahir"
+about:
+  template: trestles
+  image: images/IMG_6810.jpg
+  links:
+    - text: LinkedIn
+      href: https://www.linkedin.com/in/nima-dahir/
+    - text: GitHub
+      href: https://github.com/nimadahir
+    - text: Email
+      href: mailto:dahir4@stolaf.edu
+toc: false
 ---
 
-This is a Quarto website.
+Hi, I'm Nima! I'm a Somali-American junior from Rochester, Minnesota studying Computer Science and Statistics & Data Science at St. Olaf College. I'm especially interested in artificial intelligence, machine learning, and data science, and how technology can be used to make a positive impact.
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+At St. Olaf, I'm involved in several campus organizations and departments, including the Admissions Office, SOAR, the IE&A, the NSM Action Team, the MSCS Department, and the Muslim Student Association, among others. I love getting involved on campus, meeting new people, and finding ways to contribute to my community.
 
-```{r}
-1 + 1
-```
+Outside of St. Olaf, I've had the opportunity to intern at Mayo Clinic as both an ELMS Intern and a Data Science & AI Intern. These experiences strengthened my interest in using technology, AI, and data to make a meaningful difference in people's lives, especially in healthcare and medical technology. This upcoming summer, I'll be joining Boston Scientific as a Data Science & AI Intern!
+
+Outside of academics and work, I love spending time with friends, trying new activities, traveling (this January I will be in Denmark + Germany), exploring coffee shops, watching la liga + soccer games, and thrift shopping.
+
+I'm always excited to learn something new, take on challenges, and explore opportunities where I can combine my interests in technology, data, and helping others!
+<div style="display: flex; gap: 18px; justify-content: center; align-items: center; flex-wrap: wrap; margin: 30px 0;">
+
+  <img src="images/IMG_2984.jpeg" width="115"
+       style="transform: rotate(-7deg); border: 6px solid white; box-shadow: 2px 4px 8px #d8bfc8;">
+
+  <img src="images/IMG_4720.jpeg" width="140"
+       style="transform: rotate(3deg); border: 6px solid white; box-shadow: 2px 4px 8px #d8bfc8;">
+
+  <img src="images/IMG_0323.jpeg" width="115"
+       style="transform: rotate(-4deg); border: 6px solid white; box-shadow: 2px 4px 8px #d8bfc8;">
+
+</div>
