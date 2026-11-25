@@ -1,0 +1,207 @@
+---
+title: "igraph"
+subtitle: "R Tip of the Day"
+author: "Nima Dahir"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    transition: fade
+    transition-speed: fast
+    center: false
+    code-copy: true
+    controls: true
+    progress: true
+---
+
+## What is igraph?
+
+`igraph` is an R package used to create, visualize, and analyze networks.
+
+It allows you to study relationships between observations instead of looking at each data point individually!
+
+**Use Cases:**
+
+- Discovering patterns in networks
+- Identifying important connections in data
+
+## Understanding Network Structure
+
+- **Nodes (vertices):** Represent individual objects
+- **Edges:** Represent relationships or connections
+
+Networks can be:
+
+- **Undirected:** Connections go both ways
+- **Directed:** Connections have a specific direction
+
+## Example Network
+
+```{r}
+#| eval: false
+library(igraph)
+
+example <- make_graph(
+  c("A", "B", "A", "C", "B", "C"),
+  directed = FALSE
+)
+
+plot(
+  example,
+  vertex.color = "pink",
+  vertex.frame.color = "lightblue",
+  vertex.label.color = "navyblue",
+  edge.color = "lightblue",
+  vertex.size = 35
+)
+```
+
+## Example Network
+
+```{r}
+#| echo: false
+library(igraph)
+
+example <- make_graph(
+  c("A", "B", "A", "C", "B", "C"),
+  directed = FALSE
+)
+
+plot(
+  example,
+  vertex.color = "pink",
+  vertex.frame.color = "lightblue",
+  vertex.label.color = "navyblue",
+  edge.color = "lightblue",
+  vertex.size = 35
+)
+```
+
+## Building Networks from Data
+
+- `edges` stores the relationship data.
+- `graph_from_data_frame()` converts the data into a graph.
+- `vcount()` counts the nodes.
+- `ecount()` counts the connections.
+
+## Data Example
+
+```{r}
+edges <- data.frame(
+  from = c("Nima", "Nima", "Bridget", "Bridget",
+           "Liz", "Liz", "Lily", "Lily",
+           "Emma", "Jackson"),
+  to = c("Bridget", "Liz", "Liz", "Lily",
+         "Lily", "Emma", "Emma", "Jackson",
+         "Jameson", "Jameson")
+)
+
+network <- graph_from_data_frame(
+  edges,
+  directed = FALSE
+)
+
+vcount(network)
+ecount(network)
+```
+
+## Using igraph for Network Metrics
+
+**Degree centrality** measures the number of direct connections each node has.
+
+```{r}
+# calculate connections for every node
+connections <- degree(network)
+
+# rank nodes by their connections
+sort(connections, decreasing = TRUE)
+```
+
+## Using igraph for Network Metrics
+
+```{r}
+barplot(
+  connections,
+  main = "Connections per Node",
+  xlab = "Individuals",
+  ylab = "Number of Connections",
+  col = "lightblue",
+  border = "pink"
+)
+```
+
+## Analyzing Relationships Between Nodes
+
+**Betweenness centrality** measures how frequently a node appears on shortest paths between other nodes.
+
+```{r}
+# calculate betweenness centrality
+bridge_scores <- betweenness(network)
+
+# compare nodes by their scores
+sort(bridge_scores, decreasing = TRUE)
+```
+
+## Finding the Shortest Path
+
+```{r}
+# find the shortest path from Nima to Lily
+path <- shortest_paths(
+  network,
+  from = "Nima",
+  to = "Lily"
+)
+
+# display the path
+path$vpath
+```
+
+## Visualizing Network Structure
+
+`layout_with_fr()` is a layout algorithm in igraph that uses a force-directed approach to position connected nodes near one another.
+
+```{r}
+network_layout <- layout_with_fr(network)
+
+plot(
+  network,
+  layout = network_layout,
+  vertex.color = "pink",
+  vertex.frame.color = "lightblue",
+  vertex.size = 55,
+  vertex.label.color = "navyblue",
+  edge.color = "lightblue",
+  edge.width = 4,
+  main = "Network Structure"
+)
+```
+
+## Network Structure
+
+```{r}
+#| echo: false
+network_layout <- layout_with_fr(network)
+
+plot(
+  network,
+  layout = network_layout,
+  vertex.color = "pink",
+  vertex.frame.color = "lightblue",
+  vertex.size = 55,
+  vertex.label.color = "navyblue",
+  edge.color = "lightblue",
+  edge.width = 3,
+  main = "Network Structure"
+)
+
+```
+
+## Real-World Applications
+
+- Healthcare
+
+- Transportation
+
+- Social Media
+
+## Thanks!

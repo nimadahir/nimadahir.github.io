@@ -1,16 +1,205 @@
 [
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
+    "objectID": "mayomap.html",
+    "href": "mayomap.html",
+    "title": "Mapping Healthcare Across the United States",
     "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
+    "text": "I wanted to explore healthcare in the United States from two different perspectives. First, I looked at where Mayo Clinic’s three major campuses are located. Then, I explored health insurance coverage across the country to get a better understanding of differences in healthcare access between states!\nThe maps below use both categorical and numeric data to show these patterns. The interactive maps also let you explore individual states and learn more about the information behind each visualization."
+  },
+  {
+    "objectID": "mayomap.html#mayo-clinics-geographic-presence",
+    "href": "mayomap.html#mayo-clinics-geographic-presence",
+    "title": "Mapping Healthcare Across the United States",
+    "section": "1. Mayo Clinic’s Geographic Presence",
+    "text": "1. Mayo Clinic’s Geographic Presence\nMayo Clinic has three major campus locations in the United States: Arizona, Florida, and Minnesota. I wanted to see how these campuses are spread across the country and highlight the states where they are located.\n\nPrepare the Mayo Clinic Data\n\n\nShow code\nlibrary(tidyverse)\nlibrary(ggplot2)\nlibrary(maps)\nlibrary(leaflet)\nlibrary(sf)\nlibrary(tidycensus)\n\n# Mayo Clinic campus data\nmayo_data &lt;- tibble(\n  state_name = c(\"arizona\", \"florida\", \"minnesota\"),\n  mayo_campus = c(1, 1, 1)\n)\n\n# Locations of the three major campuses\nmayo_locations &lt;- tibble(\n  location = c(\n    \"Mayo Clinic Arizona\",\n    \"Mayo Clinic Florida\",\n    \"Mayo Clinic Rochester\"\n  ),\n  state = c(\"Arizona\", \"Florida\", \"Minnesota\"),\n  longitude = c(-112.0740, -81.6557, -92.4630),\n  latitude = c(33.4484, 30.3322, 44.0121)\n)\n\n# State map data\nus_states &lt;- map_data(\"state\")\n\n# Join Mayo Clinic data with state map data\nmayo_states &lt;- us_states |&gt;\n  left_join(mayo_data, by = c(\"region\" = \"state_name\")) |&gt;\n  mutate(mayo_campus = replace_na(mayo_campus, 0))\n\n# Interactive state map data\nstates &lt;- read_sf(\n  \"https://rstudio.github.io/leaflet/json/us-states.geojson\"\n) |&gt;\n  filter(!name %in% c(\"Alaska\", \"Hawaii\", \"District of Columbia\"))\n\nstates_mayo &lt;- states |&gt;\n  mutate(state_name = str_to_lower(name)) |&gt;\n  left_join(mayo_data, by = \"state_name\") |&gt;\n  mutate(mayo_campus = replace_na(mayo_campus, 0))\n\n\n\n\nStatic Map: Major Campus Locations\nThis map highlights the three states where Mayo Clinic has major campuses. The states are shaded in maroon, and the dots represent the approximate locations of each campus. The campuses are spread across different regions of the country, with Rochester, Minnesota, being home to Mayo Clinic’s original campus.\n\n\nShow code\nggplot(mayo_states, aes(x = long, y = lat, group = group)) +\n  geom_polygon(\n    aes(fill = factor(mayo_campus)),\n    color = \"white\"\n  ) +\n  geom_point(\n    data = mayo_locations,\n    aes(x = longitude, y = latitude),\n    inherit.aes = FALSE,\n    color = \"maroon\",\n    size = 2.5\n  ) +\n  scale_fill_manual(\n    values = c(\"0\" = \"pink\", \"1\" = \"maroon\"),\n    labels = c(\"No major campus\", \"Major campus\"),\n    name = \"Mayo Clinic presence\"\n  ) +\n  labs(\n    title = \"Mayo Clinic's Major Campus Locations\",\n    subtitle = \"Dots represent the approximate locations of the three major campuses\",\n    caption = \"Source: Mayo Clinic. Campus dots use approximate city-center coordinates.\"\n  ) +\n  coord_map() +\n  theme_void() +\n  theme(\n    plot.title = element_text(face = \"bold\"),\n    legend.position = \"right\"\n  )\n\n\n\n\n\n\n\n\n\n\n\nInteractive Map: Explore Mayo Clinic’s Locations\nThis interactive map provides another way to explore Mayo Clinic’s presence across the United States. States with a major Mayo Clinic campus are highlighted in maroon, while the remaining states are shown in pink. You can hover over states to see whether they have a major campus and click on the markers to learn which campus is located there.\n\n\nShow code\nmayo_colors &lt;- colorFactor(\n  palette = c(\"pink\", \"maroon\"),\n  domain = c(0, 1)\n)\n\nstates_mayo &lt;- states_mayo |&gt;\n  mutate(\n    labels = paste0(\n      name,\n      ifelse(\n        mayo_campus == 1,\n        \": Has a major Mayo Clinic campus\",\n        \": No major campus\"\n      )\n    )\n  )\n\nleaflet(states_mayo) |&gt;\n  setView(lng = -96, lat = 37.8, zoom = 4) |&gt;\n  addTiles() |&gt;\n  addPolygons(\n    fillColor = ~mayo_colors(mayo_campus),\n    weight = 2,\n    opacity = 1,\n    color = \"white\",\n    fillOpacity = 0.7,\n    highlightOptions = highlightOptions(\n      weight = 5,\n      color = \"darkgray\",\n      fillOpacity = 0.7,\n      bringToFront = TRUE\n    ),\n    label = ~labels\n  ) |&gt;\n  addCircleMarkers(\n    data = mayo_locations,\n    lat = ~latitude,\n    lng = ~longitude,\n    popup = ~paste0(\"&lt;b&gt;\", location, \"&lt;/b&gt;&lt;br&gt;\", state),\n    label = ~location,\n    radius = 6,\n    color = \"maroon\",\n    fillColor = \"pink\",\n    fillOpacity = 0.9\n  ) |&gt;\n  addLegend(\n    pal = mayo_colors,\n    values = ~mayo_campus,\n    title = \"Mayo Clinic presence\",\n    labels = c(\"No major campus\", \"Major campus\"),\n    position = \"bottomright\"\n  )"
+  },
+  {
+    "objectID": "mayomap.html#health-insurance-coverage-across-the-united-states",
+    "href": "mayomap.html#health-insurance-coverage-across-the-united-states",
+    "title": "Mapping Healthcare Across the United States",
+    "section": "2. Health Insurance Coverage Across the United States",
+    "text": "2. Health Insurance Coverage Across the United States\nI also wanted to explore differences in health insurance coverage across the country. I used data from the American Community Survey to look at the percentage of people in each state who do not have health insurance. This provides another perspective on healthcare access and helps show how coverage varies geographically.\n\nPrepare the Health Insurance Data\n\n\nShow code\n# Get state-level uninsured rates from the 2024 ACS\nkey &lt;-\"828101d14a9c6f7acd91b9fc7aac72a4037dc608\"\nuninsured_data &lt;- get_acs(\n  geography = \"state\",\n  variables = c(uninsured_rate = \"S2701_C05_001\"),\n  year = 2024,\n  survey = \"acs1\"\n) |&gt;\n  select(NAME, estimate, moe) |&gt;\n  rename(\n    state_name = NAME,\n    uninsured_rate = estimate,\n    margin_of_error = moe\n  ) |&gt;\n  mutate(state_name = str_to_lower(state_name))\n\n# Join uninsured data with the static state map\nuninsured_states &lt;- us_states |&gt;\n  left_join(\n    uninsured_data,\n    by = c(\"region\" = \"state_name\")\n  )\n\n# Join uninsured data with the interactive state map\nstates_uninsured &lt;- states |&gt;\n  mutate(state_name = str_to_lower(name)) |&gt;\n  left_join(\n    uninsured_data,\n    by = \"state_name\"\n  )\n\n\n\n\nStatic Map: Uninsured Rates by State\nThis map shows the percentage of the population without health insurance in each state in 2024. States with higher uninsured rates are shaded in darker maroon, while states with lower rates are lighter pink. This makes it easier to compare states and identify geographic patterns in health insurance coverage.\n\n\nShow code\nggplot(\n  uninsured_states,\n  aes(x = long, y = lat, group = group)\n) +\n  geom_polygon(\n    aes(fill = uninsured_rate),\n    color = \"white\"\n  ) +\n  scale_fill_gradient(\n    low = \"pink\",\n    high = \"maroon\",\n    name = \"Uninsured rate (%)\"\n  ) +\n  labs(\n    title = \"Uninsured Rates Across the United States\",\n    subtitle = \"Percentage of the population without health insurance, 2024\",\n    caption = \"Source: U.S. Census Bureau, 2024 American Community Survey, Table S2701.\"\n  ) +\n  coord_map() +\n  theme_void() +\n  theme(\n    plot.title = element_text(face = \"bold\"),\n    legend.position = \"right\"\n  )\n\n\n\n\n\n\n\n\n\n\n\nInteractive Map: Explore Uninsured Rates\nThis interactive map allows you to explore uninsured rates state by state. States with higher uninsured rates appear darker, while states with lower rates appear lighter. You can hover over each state to see its estimated uninsured percentage and click on it for additional information, including the margin of error.\n\n\nShow code\nuninsured_colors &lt;- colorNumeric(\n  palette = c(\"pink\", \"maroon\"),\n  domain = states_uninsured$uninsured_rate\n)\n\nstates_uninsured &lt;- states_uninsured |&gt;\n  mutate(\n    labels = paste0(\n      name,\n      \": \",\n      round(uninsured_rate, 1),\n      \"% uninsured\"\n    ),\n    popups = paste0(\n      \"&lt;b&gt;\", name, \"&lt;/b&gt;&lt;br&gt;\",\n      \"Uninsured rate: \",\n      round(uninsured_rate, 1), \"%&lt;br&gt;\",\n      \"Margin of error: ±\",\n      round(margin_of_error, 1),\n      \" percentage points\"\n    )\n  )\n\nleaflet(states_uninsured) |&gt;\n  setView(lng = -96, lat = 37.8, zoom = 4) |&gt;\n  addTiles() |&gt;\n  addPolygons(\n    fillColor = ~uninsured_colors(uninsured_rate),\n    weight = 2,\n    opacity = 1,\n    color = \"white\",\n    fillOpacity = 0.75,\n    highlightOptions = highlightOptions(\n      weight = 5,\n      color = \"darkgray\",\n      fillOpacity = 0.85,\n      bringToFront = TRUE\n    ),\n    label = ~labels,\n    popup = ~popups\n  ) |&gt;\n  addLegend(\n    pal = uninsured_colors,\n    values = ~uninsured_rate,\n    title = \"Uninsured rate (%)\",\n    position = \"bottomright\"\n  )"
+  },
+  {
+    "objectID": "mayomap.html#data-sources",
+    "href": "mayomap.html#data-sources",
+    "title": "Mapping Healthcare Across the United States",
+    "section": "Data Sources",
+    "text": "Data Sources\n\nMayo Clinic\nU.S. Census Bureau: 2024 American Community Survey, Table S2701\nU.S. Census Bureau: ACS Data"
+  },
+  {
+    "objectID": "rtip.html#what-is-igraph",
+    "href": "rtip.html#what-is-igraph",
+    "title": "igraph",
+    "section": "What is igraph?",
+    "text": "What is igraph?\nigraph is an R package used to create, visualize, and analyze networks.\nIt allows you to study relationships between observations instead of looking at each data point individually!\nUse Cases:\n\nDiscovering patterns in networks\nIdentifying important connections in data"
+  },
+  {
+    "objectID": "rtip.html#understanding-network-structure",
+    "href": "rtip.html#understanding-network-structure",
+    "title": "igraph",
+    "section": "Understanding Network Structure",
+    "text": "Understanding Network Structure\n\nNodes (vertices): Represent individual objects\nEdges: Represent relationships or connections\n\nNetworks can be:\n\nUndirected: Connections go both ways\nDirected: Connections have a specific direction"
+  },
+  {
+    "objectID": "rtip.html#example-network",
+    "href": "rtip.html#example-network",
+    "title": "igraph",
+    "section": "Example Network",
+    "text": "Example Network"
+  },
+  {
+    "objectID": "rtip.html#example-network-1",
+    "href": "rtip.html#example-network-1",
+    "title": "igraph",
+    "section": "Example Network",
+    "text": "Example Network"
+  },
+  {
+    "objectID": "rtip.html#building-networks-from-data",
+    "href": "rtip.html#building-networks-from-data",
+    "title": "igraph",
+    "section": "Building Networks from Data",
+    "text": "Building Networks from Data\n\nedges stores the relationship data.\ngraph_from_data_frame() converts the data into a graph.\nvcount() counts the nodes.\necount() counts the connections."
+  },
+  {
+    "objectID": "rtip.html#data-example",
+    "href": "rtip.html#data-example",
+    "title": "igraph",
+    "section": "Data Example",
+    "text": "Data Example\n\n\n[1] 7\n\n\n[1] 10"
+  },
+  {
+    "objectID": "rtip.html#using-igraph-for-network-metrics",
+    "href": "rtip.html#using-igraph-for-network-metrics",
+    "title": "igraph",
+    "section": "Using igraph for Network Metrics",
+    "text": "Using igraph for Network Metrics\nDegree centrality measures the number of direct connections each node has.\n\n\n    Liz    Lily Bridget    Emma    Nima Jackson Jameson \n      4       4       3       3       2       2       2"
+  },
+  {
+    "objectID": "rtip.html#using-igraph-for-network-metrics-1",
+    "href": "rtip.html#using-igraph-for-network-metrics-1",
+    "title": "igraph",
+    "section": "Using igraph for Network Metrics",
+    "text": "Using igraph for Network Metrics"
+  },
+  {
+    "objectID": "rtip.html#analyzing-relationships-between-nodes",
+    "href": "rtip.html#analyzing-relationships-between-nodes",
+    "title": "igraph",
+    "section": "Analyzing Relationships Between Nodes",
+    "text": "Analyzing Relationships Between Nodes\nBetweenness centrality measures how frequently a node appears on shortest paths between other nodes.\n\n\n     Lily       Liz      Emma   Bridget   Jackson   Jameson      Nima \n4.6666667 3.8333333 3.1666667 1.0000000 0.8333333 0.5000000 0.0000000"
+  },
+  {
+    "objectID": "rtip.html#finding-the-shortest-path",
+    "href": "rtip.html#finding-the-shortest-path",
+    "title": "igraph",
+    "section": "Finding the Shortest Path",
+    "text": "Finding the Shortest Path\n\n\n[[1]]\n+ 3/7 vertices, named, from d873f5e:\n[1] Nima    Bridget Lily"
+  },
+  {
+    "objectID": "rtip.html#visualizing-network-structure",
+    "href": "rtip.html#visualizing-network-structure",
+    "title": "igraph",
+    "section": "Visualizing Network Structure",
+    "text": "Visualizing Network Structure\nlayout_with_fr() is a layout algorithm in igraph that uses a force-directed approach to position connected nodes near one another."
+  },
+  {
+    "objectID": "rtip.html#network-structure",
+    "href": "rtip.html#network-structure",
+    "title": "igraph",
+    "section": "Network Structure",
+    "text": "Network Structure"
+  },
+  {
+    "objectID": "rtip.html#real-world-applications",
+    "href": "rtip.html#real-world-applications",
+    "title": "igraph",
+    "section": "Real-World Applications",
+    "text": "Real-World Applications\n\nHealthcare\nTransportation\nSocial Media"
+  },
+  {
+    "objectID": "rtip.html#thanks",
+    "href": "rtip.html#thanks",
+    "title": "igraph",
+    "section": "Thanks!",
+    "text": "Thanks!"
+  },
+  {
+    "objectID": "healthcaremap.html",
+    "href": "healthcaremap.html",
+    "title": "healthcaremap",
+    "section": "",
+    "text": "library(tidyverse)\nlibrary(ggplot2)\nlibrary(maps)\nlibrary(leaflet)\nlibrary(sf)\nlibrary(tidycensus)\n\n# Mayo Clinic campus data\nmayo_data &lt;- tibble(\n  state_name = c(\"arizona\", \"florida\", \"minnesota\"),\n  mayo_campus = c(1, 1, 1)\n)\n\n# Approximate locations of the three major Mayo Clinic campuses\nmayo_locations &lt;- tibble(\n  location = c(\n    \"Mayo Clinic Arizona\",\n    \"Mayo Clinic Florida\",\n    \"Mayo Clinic Rochester\"\n  ),\n  state = c(\"Arizona\", \"Florida\", \"Minnesota\"),\n  longitude = c(-112.0740, -81.6557, -92.4630),\n  latitude = c(33.4484, 30.3322, 44.0121)\n)\n\n# Static map data for Mayo Clinic\nus_states &lt;- map_data(\"state\")\n\nmayo_states &lt;- us_states |&gt;\n  left_join(mayo_data, by = c(\"region\" = \"state_name\")) |&gt;\n  mutate(mayo_campus = replace_na(mayo_campus, 0))\n\n# Interactive map data for Mayo Clinic\nstates &lt;- read_sf(\n  \"https://rstudio.github.io/leaflet/json/us-states.geojson\"\n) |&gt;\n  filter(!name %in% c(\"Alaska\", \"Hawaii\", \"District of Columbia\"))\n\nstates_mayo &lt;- states |&gt;\n  mutate(state_name = str_to_lower(name)) |&gt;\n  left_join(mayo_data, by = \"state_name\") |&gt;\n  mutate(mayo_campus = replace_na(mayo_campus, 0))\n\n# Get 2024 uninsured rates from the American Community Survey\nuninsured_data &lt;- get_acs(\n  geography = \"state\",\n  variables = c(uninsured_rate = \"S2701_C05_001\"),\n  year = 2024,\n  survey = \"acs1\"\n) |&gt;\n  select(NAME, estimate, moe) |&gt;\n  rename(\n    state_name = NAME,\n    uninsured_rate = estimate,\n    margin_of_error = moe\n  ) |&gt;\n  mutate(state_name = str_to_lower(state_name))\n\n# Static map data for uninsured rates\nuninsured_states &lt;- us_states |&gt;\n  left_join(uninsured_data, by = c(\"region\" = \"state_name\"))\n\n# Interactive map data for uninsured rates\nstates_uninsured &lt;- states |&gt;\n  mutate(state_name = str_to_lower(name)) |&gt;\n  left_join(uninsured_data, by = \"state_name\")"
+  },
+  {
+    "objectID": "maps/mayomap.knit.html",
+    "href": "maps/mayomap.knit.html",
+    "title": "Mayo Clinic’s Presence Across the United States",
+    "section": "",
+    "text": "Mayo Clinic has three major campus locations in the United States: Arizona, Florida, and Minnesota. I wanted to explore where these campuses are located and get a better understanding of Mayo Clinic’s geographic presence across the country. The maps below show the locations of the three major campuses and allow you to explore which states have a major Mayo Clinic campus.\n\n\nShow code\nlibrary(tidyverse)\nlibrary(maps)\nlibrary(leaflet)\nlibrary(sf)\n\n# Get the United States map data\nus_states &lt;- map_data(\"state\")\n\n# Identify states with major Mayo Clinic campuses\nmayo_data &lt;- tibble(\n  state_name = c(\"arizona\", \"florida\", \"minnesota\"),\n  mayo_campus = c(1, 1, 1)\n)\n\n# Match the Mayo Clinic data with the state map\nmayo_states &lt;- us_states |&gt;\n  left_join(mayo_data, by = c(\"region\" = \"state_name\")) |&gt;\n  mutate(mayo_campus = replace_na(mayo_campus, 0))\n\n# Store the approximate locations of the three major campuses\nmayo_locations &lt;- tibble(\n  location = c(\n    \"Mayo Clinic Arizona\",\n    \"Mayo Clinic Florida\",\n    \"Mayo Clinic Rochester\"\n  ),\n  state = c(\"Arizona\", \"Florida\", \"Minnesota\"),\n  longitude = c(-112.0740, -81.6557, -92.4630),\n  latitude = c(33.4484, 30.3322, 44.0121)\n)\n\n\n\nMajor Campus Locations\nThis map highlights the three states where Mayo Clinic has major campuses. The states are shaded in maroon, and the dots represent the approximate locations of each campus. It is interesting to see how the campuses are spread across different regions of the country, with Rochester, Minnesota, being home to Mayo Clinic’s original campus.\n\n\nShow code\nggplot(mayo_states, aes(x = long, y = lat, group = group)) +\n  geom_polygon(aes(fill = factor(mayo_campus)), color = \"white\") +\n  geom_point(\n    data = mayo_locations,\n    aes(x = longitude, y = latitude),\n    inherit.aes = FALSE,\n    color = \"maroon\",\n    size = 2.5\n  ) +\n  scale_fill_manual(\n    values = c(\"0\" = \"pink\", \"1\" = \"maroon\"),\n    labels = c(\"No major campus\", \"Major campus\"),\n    name = \"Mayo Clinic presence\"\n  ) +\n  labs(\n    title = \"Mayo Clinic's Major Campus Locations\",\n    subtitle = \"Dots represent the approximate locations of the three major campuses\",\n    caption = \"Source: Mayo Clinic. Campus dots use approximate city-center coordinates.\"\n  ) +\n  coord_map() +\n  theme_void() +\n  theme(\n    plot.title = element_text(face = \"bold\"),\n    legend.position = \"right\"\n  )\n\n\n\n\n\n\n\n\n\n\n\nExplore Mayo Clinic’s Locations\nThis interactive map provides another way to explore Mayo Clinic’s presence across the United States. States with a major Mayo Clinic campus are highlighted in maroon, while the remaining states are shown in pink. You can hover over states to see whether they have a major campus and click on the markers to learn which campus is located there. This makes it easier to explore the locations and see how Mayo Clinic’s major campuses are distributed across the country.\n\n\nShow code\n# States map for interactive plotting\nstates &lt;- read_sf(\"https://rstudio.github.io/leaflet/json/us-states.geojson\") |&gt;\n  filter(!name %in% c(\"Alaska\", \"Hawaii\", \"District of Columbia\"))\n\n# Match the state names to our Mayo Clinic data\nstates_mayo &lt;- states |&gt;\n  mutate(state_name = str_to_lower(name)) |&gt;\n  left_join(mayo_data, by = \"state_name\") |&gt;\n  mutate(mayo_campus = replace_na(mayo_campus, 0))\n\n# Create colors for the map\nmayo_colors &lt;- colorFactor(\n  palette = c(\"pink\", \"maroon\"),\n  domain = c(0, 1)\n)\n\n# Create labels that appear when hovering over a state\nstates_mayo &lt;- states_mayo |&gt;\n  mutate(\n    labels = paste0(\n      name,\n      ifelse(\n        mayo_campus == 1,\n        \": Has a major Mayo Clinic campus\",\n        \": No major campus\"\n      )\n    )\n  )\n\n# Create the interactive map\nleaflet(states_mayo) |&gt;\n  setView(lng = -96, lat = 37.8, zoom = 4) |&gt;\n  addTiles() |&gt;\n  addPolygons(\n    fillColor = ~mayo_colors(mayo_campus),\n    weight = 2,\n    opacity = 1,\n    color = \"white\",\n    fillOpacity = 0.7,\n    highlightOptions = highlightOptions(\n      weight = 5,\n      color = \"darkgray\",\n      fillOpacity = 0.7,\n      bringToFront = TRUE\n    ),\n    label = ~labels\n  ) |&gt;\n  addCircleMarkers(\n    data = mayo_locations,\n    lat = ~latitude,\n    lng = ~longitude,\n    popup = ~paste0(\"&lt;b&gt;\", location, \"&lt;/b&gt;&lt;br&gt;\", state),\n    label = ~location,\n    radius = 6,\n    color = \"maroon\",\n    fillColor = \"pink\",\n    fillOpacity = 0.9\n  ) |&gt;\n  addLegend(\n    pal = mayo_colors,\n    values = ~mayo_campus,\n    title = \"Mayo Clinic presence\",\n    labels = c(\"No major campus\", \"Major campus\"),\n    position = \"bottomright\"\n  )"
   },
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "nimadahir.github.io",
+    "title": "Nima Dahir",
     "section": "",
-    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+    "text": "Hi, I’m Nima! I’m a Somali-American junior from Rochester, Minnesota studying Computer Science and Statistics & Data Science at St. Olaf College. I’m especially interested in artificial intelligence, machine learning, and data science, and how technology can be used to make a positive impact.\nAt St. Olaf, I’m involved in several campus organizations and departments, including the Admissions Office, SOAR, the IE&A, the NSM Action Team, the MSCS Department, and the Muslim Student Association, among others. I love getting involved on campus, meeting new people, and finding ways to contribute to my community.\nOutside of St. Olaf, I’ve had the opportunity to intern at Mayo Clinic as both an ELMS Intern and a Data Science & AI Intern. These experiences strengthened my interest in using technology, AI, and data to make a meaningful difference in people’s lives, especially in healthcare and medical technology. This upcoming summer, I’ll be joining Boston Scientific as a Data Science & AI Intern!\nOutside of academics and work, I love spending time with friends, trying new activities, traveling (this January I will be in Denmark + Germany), exploring coffee shops, watching la liga + soccer games, and thrift shopping.\nI’m always excited to learn something new, take on challenges, and explore opportunities where I can combine my interests in technology, data, and helping others!"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "How Does Thor’s Dialogue Change in Thor: Ragnarok?",
+    "section": "",
+    "text": "Show code\nlibrary(tidyverse)\nlibrary(tidytext)\n\nragnarok &lt;- read_csv(\"miniproject1/ragnarok.csv\")"
+  },
+  {
+    "objectID": "about.html#introduction",
+    "href": "about.html#introduction",
+    "title": "How Does Thor’s Dialogue Change in Thor: Ragnarok?",
+    "section": "Introduction",
+    "text": "Introduction\nThor: Ragnarok is full of action, family drama, and funny conversations. I wanted to see whether Thor’s dialogue changes as the movie goes on. Does he ask more questions or use more exclamations at certain points? Does the length of his dialogue change? I also wanted to see which words he uses most often and whether his language becomes more positive or negative. To explore this, I used a dataset of dialogue from the movie. I treated the rows as being in the same order as the movie and divided Thor’s lines into three sections: beginning, middle, and end. This is an approximate division, not an exact division into scenes."
+  },
+  {
+    "objectID": "about.html#getting-the-dialogue-ready",
+    "href": "about.html#getting-the-dialogue-ready",
+    "title": "How Does Thor’s Dialogue Change in Thor: Ragnarok?",
+    "section": "Getting the dialogue ready",
+    "text": "Getting the dialogue ready\nFirst, I kept the rows containing Thor’s dialogue and cleaned up the text to make it easier to analyze. I used str_to_lower() to make the text lowercase, str_replace_all() to remove punctuation, and str_length() to measure the length of each line. I also divided Thor’s dialogue into three sections: beginning, middle, and end.\n\n\nShow code\nthor &lt;- ragnarok |&gt;\n  filter(str_detect(str_to_lower(character), \"thor\")) |&gt;\n  mutate(\n    clean_line = str_replace_all(str_to_lower(line), \"[^a-z ]\", \" \"),\n    line_length = str_length(line),\n    line_number = row_number(),\n    section = ifelse(line_number &lt;= n()/3, \"Beginning\",\n              ifelse(line_number &lt;= 2*n()/3, \"Middle\", \"End\"))\n  )"
+  },
+  {
+    "objectID": "about.html#does-thors-dialogue-get-longer",
+    "href": "about.html#does-thors-dialogue-get-longer",
+    "title": "How Does Thor’s Dialogue Change in Thor: Ragnarok?",
+    "section": "1. Does Thor’s dialogue get longer?",
+    "text": "1. Does Thor’s dialogue get longer?\nI started by checking whether the length of Thor’s lines changes across the movie. A longer line does not necessarily mean a more important line, but it is one simple way to compare how much he says at different points.\n\n\nShow code\nline_lengths &lt;- thor |&gt;\n  group_by(section) |&gt;\n  summarise(average_length = mean(line_length))\n\nline_lengths |&gt;\n  ggplot(aes(x = section, y = average_length)) +\n  geom_col(fill = \"pink\", color = \"gray\") +\n  labs(title = \"How long are Thor's lines?\",\n       x = \"Part of movie\", y = \"Average characters per line\") +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 1: Average number of characters in Thor’s dialogue lines by section.\n\n\n\n\n\nThe chart compares the average length of Thor’s lines in each section. The average line lengths are 44.8, 49.9, 50.8 characters for beginning, middle, and end, respectively. The section with the tallest bar has the longest lines on average. This measures line length, not how emotional or meaningful the dialogue is."
+  },
+  {
+    "objectID": "about.html#how-does-thors-speaking-style-change",
+    "href": "about.html#how-does-thors-speaking-style-change",
+    "title": "How Does Thor’s Dialogue Change in Thor: Ragnarok?",
+    "section": "2. How does Thor’s speaking style change?",
+    "text": "2. How does Thor’s speaking style change?\nNext, I wanted to see how Thor’s speaking style changes throughout the movie. I looked at how often he asks questions, uses exclamation marks, and uses longer words. I used str_detect() with three different regular expressions to identify these patterns. The regular expression \\\\? looks for question marks, ! looks for exclamation marks, and \\\\b[a-z]{8,}\\\\b looks for words containing eight or more letters. This helped me compare different patterns in Thor’s dialogue without focusing on specific words.\n\n\nShow code\nthemes &lt;- thor |&gt;\n  mutate(\n    questions = str_detect(line, \"\\\\?\"),\n    exclamations = str_detect(line, \"!\"),\n    long_words = str_detect(clean_line, \"\\\\b[a-z]{8,}\\\\b\")\n  ) |&gt;\n  group_by(section) |&gt;\n  summarise(\n    Questions = sum(questions),\n    Exclamations = sum(exclamations),\n    Long_Words = sum(long_words)\n  ) |&gt;\n  pivot_longer(\n    cols = c(Questions, Exclamations, Long_Words),\n    names_to = \"theme\",\n    values_to = \"lines\"\n  )\n\n\n\n\nShow code\nthemes |&gt;\n  ggplot(aes(x = section, y = lines, fill = theme)) +\n  geom_col(position = \"dodge\") +\n  scale_fill_manual(values = c(\n    \"Questions\" = \"pink\",\n    \"Exclamations\" = \"gray\",\n    \"Long_Words\" = \"maroon\"\n  )) +\n  labs(\n    title = \"How does Thor's speaking style change?\",\n    x = \"Part of movie\",\n    y = \"Number of lines\",\n    fill = \"Dialogue pattern\"\n  ) +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 2: Number of Thor’s lines containing questions, exclamations, or long words in each section.\n\n\n\n\n\nThis chart lets me compare how Thor’s speaking style changes throughout the movie. I wanted to see whether he asks more questions, uses more exclamation marks, or uses longer words in different sections. These patterns might help show changes in how he communicates. However, just because Thor uses more exclamation marks or longer words does not necessarily mean he is more emotional or serious. The chart only shows how often these patterns appear in his dialogue."
+  },
+  {
+    "objectID": "about.html#which-words-does-thor-use-most",
+    "href": "about.html#which-words-does-thor-use-most",
+    "title": "How Does Thor’s Dialogue Change in Thor: Ragnarok?",
+    "section": "3. Which words does Thor use most?",
+    "text": "3. Which words does Thor use most?\nFor my first text-analysis application, I counted words. I used unnest_tokens() from tidytext to separate lines into words, removed common words such as “the” and “and,” and counted what remained.\n\n\nShow code\nwords &lt;- thor |&gt;\n  select(section, clean_line) |&gt;\n  unnest_tokens(word, clean_line) |&gt;\n  anti_join(stop_words, by = \"word\")\n\ncommon_words &lt;- words |&gt;\n  count(word, sort = TRUE) |&gt;\n  slice_head(n = 12)\n\n\n\n\nShow code\ncommon_words |&gt;\n  ggplot(aes(x = n, y = reorder(word, n))) +\n  geom_col(fill = \"pink\", color =\"gray\") +\n  labs(title = \"Thor's most common words\", x = \"Times used\", y = \"Word\") +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 3: The 12 most frequent non-stop words in Thor’s dialogue.\n\n\n\n\n\nThe most common word after removing stop words is asgard, appearing 25 times. This chart shows which words Thor repeats most often after common stop words are removed. Frequent words can point toward important people or ideas, but a word count alone cannot tell us exactly what Thor means when he uses a word."
+  },
+  {
+    "objectID": "about.html#does-thors-language-become-more-positive-or-negative",
+    "href": "about.html#does-thors-language-become-more-positive-or-negative",
+    "title": "How Does Thor’s Dialogue Change in Thor: Ragnarok?",
+    "section": "4. Does Thor’s language become more positive or negative?",
+    "text": "4. Does Thor’s language become more positive or negative?\nFor my second text-analysis application, I used Bing sentiment analysis. The Bing list labels certain words as positive or negative. I compared the number of positive and negative words in each section.\n\n\nShow code\nsentiment_words &lt;- words |&gt;\n  inner_join(get_sentiments(\"bing\"), by = \"word\") |&gt;\n  count(section, sentiment)\n\n\n\n\nShow code\nsentiment_words |&gt;\n  ggplot(aes(x = section, y = n, fill = sentiment)) +\n  geom_col(position = \"dodge\") +\n  scale_fill_manual(values = c(\"positive\" = \"maroon\",\n                             \"negative\" = \"gray\")) +\n  labs(title = \"Positive and negative words across the movie\",\n       x = \"Part of movie\", y = \"Number of sentiment words\",\n       fill = \"Sentiment\") +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 4: Counts of words classified as positive or negative by the Bing sentiment lexicon, across three sections of Thor’s dialogue.\n\n\n\n\n\nThis plot compares positive and negative word counts. It can help identify changes in the language Thor uses, but it cannot tell us exactly how Thor feels. For example, a character might use a negative word while making a joke. Since I divided Thor’s lines into three nearly equal groups, the sections have similar numbers of lines, but not necessarily the same number of words."
+  },
+  {
+    "objectID": "about.html#conclusion",
+    "href": "about.html#conclusion",
+    "title": "How Does Thor’s Dialogue Change in Thor: Ragnarok?",
+    "section": "Conclusion",
+    "text": "Conclusion\nBy looking at Thor’s dialogue in different ways, I can see how text analysis helps us ask questions about a movie beyond its plot. Line lengths show how much Thor says at a time, regular expressions help track topics like family and fighting, word counts show repeated language, and sentiment analysis compares positive and negative words. The biggest limitation is that these tools cannot understand sarcasm, context, or the meaning of a whole scene. Even so, these simple methods offer a useful starting point for exploring how Thor’s dialogue changes during Ragnarok."
   }
 ]

@@ -1,0 +1,77 @@
+---
+title: "healthcaremap"
+format: html
+---
+
+```{r}
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(ggplot2)
+library(maps)
+library(leaflet)
+library(sf)
+library(tidycensus)
+
+# Mayo Clinic campus data
+mayo_data <- tibble(
+  state_name = c("arizona", "florida", "minnesota"),
+  mayo_campus = c(1, 1, 1)
+)
+
+# Approximate locations of the three major Mayo Clinic campuses
+mayo_locations <- tibble(
+  location = c(
+    "Mayo Clinic Arizona",
+    "Mayo Clinic Florida",
+    "Mayo Clinic Rochester"
+  ),
+  state = c("Arizona", "Florida", "Minnesota"),
+  longitude = c(-112.0740, -81.6557, -92.4630),
+  latitude = c(33.4484, 30.3322, 44.0121)
+)
+
+# Static map data for Mayo Clinic
+us_states <- map_data("state")
+
+mayo_states <- us_states |>
+  left_join(mayo_data, by = c("region" = "state_name")) |>
+  mutate(mayo_campus = replace_na(mayo_campus, 0))
+
+# Interactive map data for Mayo Clinic
+states <- read_sf(
+  "https://rstudio.github.io/leaflet/json/us-states.geojson"
+) |>
+  filter(!name %in% c("Alaska", "Hawaii", "District of Columbia"))
+
+states_mayo <- states |>
+  mutate(state_name = str_to_lower(name)) |>
+  left_join(mayo_data, by = "state_name") |>
+  mutate(mayo_campus = replace_na(mayo_campus, 0))
+
+# Get 2024 uninsured rates from the American Community Survey
+uninsured_data <- get_acs(
+  geography = "state",
+  variables = c(uninsured_rate = "S2701_C05_001"),
+  year = 2024,
+  survey = "acs1"
+) |>
+  select(NAME, estimate, moe) |>
+  rename(
+    state_name = NAME,
+    uninsured_rate = estimate,
+    margin_of_error = moe
+  ) |>
+  mutate(state_name = str_to_lower(state_name))
+
+# Static map data for uninsured rates
+uninsured_states <- us_states |>
+  left_join(uninsured_data, by = c("region" = "state_name"))
+
+# Interactive map data for uninsured rates
+states_uninsured <- states |>
+  mutate(state_name = str_to_lower(name)) |>
+  left_join(uninsured_data, by = "state_name")
+```
+
