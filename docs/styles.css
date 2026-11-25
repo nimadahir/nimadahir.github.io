@@ -1,0 +1,89 @@
+/* css styles */
+
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&display=swap');
+
+/* Overall website styling */
+body {
+  background-color: #fff9fa;
+  color: #46343b;
+  font-family: 'Times New Roman', sans-serif;
+}
+
+/* Headings */
+h1, h2, h3, h4 {
+  font-family: 'Times New Roman', sans-serif;
+  font-weight: 700;
+  color: #a65f7a;
+}
+
+/* Paragraphs and lists */
+p, li {
+  line-height: 1.7;
+}
+
+/* Navigation bar */
+.navbar {
+  background-color: #f4dce4 !important;
+}
+
+.navbar a {
+  color: #553b46 !important;
+}
+
+/* Links */
+a {
+  color: #b76e8b;
+}
+
+a:hover {
+  color: #87445f;
+}
+
+/* About page links */
+.about-links a {
+  color: #a65f7a;
+}
+
+/* Buttons */
+.btn {
+  background-color: #e9bdcd;
+  border-color: #e9bdcd;
+  color: #46343b;
+}
+
+.btn:hover {
+  background-color: #d99bb3;
+  border-color: #d99bb3;
+  color: #46343b;
+}
+
+/* Footer */
+.nav-footer {
+  background-color: #f4dce4;
+}
+
+./* Main profile image */
+.quarto-about-trestles image {
+  border: 8px solid white;
+  box-shadow: 2px 4px 10px #d8bfc8;
+}
+
+/* Position the collage underneath the profile section */
+.quarto-about-trestles .about-links {
+  margin-bottom: 20px;
+}
+
+.profile-collage {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  align-items: center;
+  margin: 20px auto 40px auto;
+}
+
+.profile-collage image {
+  object-fit: cover;
+  border: 6px solid white;
+  box-shadow: 2px 4px 8px #d8bfc8;
+}
